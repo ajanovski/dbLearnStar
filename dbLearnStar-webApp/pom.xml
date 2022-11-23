@@ -49,7 +49,7 @@
 		<maven-compiler-version>3.8.1</maven-compiler-version>
 		<maven-surefire-version>3.0.0-M5</maven-surefire-version>
 
-		<postgresql-version>42.5.0</postgresql-version>
+		<postgresql-version>42.5.1</postgresql-version>
 		<cas-client-version>3.6.4</cas-client-version>
 	</properties>
 
