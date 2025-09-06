@@ -40,6 +40,7 @@ import dblearnstar.model.entities.Model;
 import dblearnstar.model.entities.Student;
 import dblearnstar.model.entities.TaskInTestInstance;
 import dblearnstar.model.entities.TaskType;
+import dblearnstar.model.model.TaskTypeChecker;
 import dblearnstar.model.entities.TestInstance;
 import dblearnstar.model.model.UserInfo;
 import dblearnstar.webapp.annotations.AdministratorPage;
@@ -242,4 +243,20 @@ public class TasksOverviewPage {
 		}
 	}
 
+	public boolean isTriggerTask() {
+		return listedTaskInTestInstance
+			.getTask()
+			.getTaskIsOfTypes()
+			.stream()
+			.anyMatch(t -> TaskTypeChecker.isTRIGGER(t.getTaskType().getCodetype()));
+	}
+
+	public String parsedListedTaskDescription() {
+		if(!isTriggerTask()) {
+			return listedTaskInTestInstance.getTask().getDescription();
+		} else {
+			String description = listedTaskInTestInstance.getTask().getDescription();
+			return description.split("###")[0].trim();
+		}
+	}
 }
