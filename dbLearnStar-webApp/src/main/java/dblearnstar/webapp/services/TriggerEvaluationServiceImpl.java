@@ -266,6 +266,18 @@ public class TriggerEvaluationServiceImpl implements TriggerEvaluationService {
         getEntityManager().saveOrUpdate(studentSubmission);
     }
 
+    @Override
+    public void reEvalListOfSubmissions(String userName, List<StudentSubmitSolution> list) {
+
+        list.forEach(studentSubmitSolution -> {
+            try {
+                reEvalSolution(userName, studentSubmitSolution);
+            } catch (Exception e) {
+                logger.error("Fail evaluation for sssId: {}", studentSubmitSolution.getStudentSubmitSolutionId());
+            }
+        });
+    }
+
     private Connection getNewDbConnection(TestInstanceParameters testInstanceParameters) throws SQLException {
 
         String url = String.format("jdbc:%s://%s:%s/%s",

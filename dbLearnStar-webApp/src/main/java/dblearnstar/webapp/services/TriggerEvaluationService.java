@@ -1,5 +1,7 @@
 package dblearnstar.webapp.services;
 
+import java.util.List;
+
 import dblearnstar.model.entities.StudentSubmitSolution;
 import dblearnstar.model.entities.TaskInTestInstance;
 import dblearnstar.model.entities.TestInstanceParameters;
@@ -60,5 +62,13 @@ public interface TriggerEvaluationService {
      * @param studentSubmission student submission object to be updated
      */
     void reEvalSolution(String issuedByUserName, StudentSubmitSolution studentSubmission);
+
+    /**
+     * Reevaluates trigger submissions for simple and complex schema and updates results
+     *
+     * @param userName user whose solutions are reevaluated
+     * @param studentSubmissions list of student submissions for reevaluation
+     */
+    void reEvalListOfSubmissions(String userName, List<StudentSubmitSolution> studentSubmissions);
 
 }
