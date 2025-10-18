@@ -102,7 +102,7 @@ public class ManagePersons {
 	}
 
 	public void onActionFromImportPersons() {
-		personListToImport = "firstName,lastName,email,userName";
+		personListToImport = "firstName,lastName,userName";
 	}
 
 	@CommitAfter
@@ -117,12 +117,16 @@ public class ManagePersons {
 					p = personManager.getPersonByUsername(lineFields[3]);
 					if (p != null) {
 						errors += ">>> Person " + p.getUserName() + " already exists, skipping creation, activating.";
+						if (p.getStudents().size() > 0) {
+							p.setFirstName(lineFields[0]);
+							p.setLastName(lineFields[1]);
+							genericService.save(p);
+						}
 					} else {
 						p = new Person();
 						p.setFirstName(lineFields[0]);
 						p.setLastName(lineFields[1]);
-						// p.setEmail(lineFields[2]);
-						p.setUserName(lineFields[3]);
+						p.setUserName(lineFields[2]);
 						genericService.save(p);
 						Student pr = new Student();
 						pr.setPerson(p);
