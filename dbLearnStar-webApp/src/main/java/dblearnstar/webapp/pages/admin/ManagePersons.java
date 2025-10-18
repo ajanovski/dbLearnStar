@@ -102,7 +102,7 @@ public class ManagePersons {
 	}
 
 	public void onActionFromImportPersons() {
-		personListToImport = "firstName,lastName,email,userName";
+		personListToImport = "firstName\tlastName\tuserName";
 	}
 
 	@CommitAfter
@@ -114,22 +114,26 @@ public class ManagePersons {
 				String[] lineFields = line.split("[,\t]");
 				Person p;
 				try {
-					p = personManager.getPersonByUsername(lineFields[3]);
+					p = personManager.getPersonByUsername(lineFields[2]);
 					if (p != null) {
 						errors += ">>> Person " + p.getUserName() + " already exists, skipping creation, activating.";
+						if (p.getStudents().size() > 0) {
+							p.setFirstName(lineFields[0]);
+							p.setLastName(lineFields[1]);
+							genericService.save(p);
+						}
 					} else {
 						p = new Person();
 						p.setFirstName(lineFields[0]);
 						p.setLastName(lineFields[1]);
-						// p.setEmail(lineFields[2]);
-						p.setUserName(lineFields[3]);
+						p.setUserName(lineFields[2]);
 						genericService.save(p);
 						Student pr = new Student();
 						pr.setPerson(p);
 						genericService.save(pr);
 					}
 				} catch (Exception e) {
-					errors += ">>> Person " + lineFields[3] + " can not be imported due to: " + e.getLocalizedMessage();
+					errors += ">>> Person " + lineFields[2] + " can not be imported due to: " + e.getLocalizedMessage();
 				}
 			}
 			if (!(errors.length() > 0)) {
