@@ -133,7 +133,7 @@ public class ManagePersons {
 						genericService.save(pr);
 					}
 				} catch (Exception e) {
-					errors += ">>> Person " + lineFields[2] + " can not be imported due to: " + e.getLocalizedMessage();
+					errors += "--- Person " + lineFields[2] + " can not be imported due to: " + e.getLocalizedMessage()+"<br>";
 				}
 			}
 			if (!(errors.length() > 0)) {
