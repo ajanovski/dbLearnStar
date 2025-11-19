@@ -157,7 +157,7 @@ public class AppModule {
 				userInfo.setUserName(userName);
 				logger.info("External auth login by user {}. Checking privileges.", userName);
 
-				Person loggedInPerson = (Person) session.getEntityManagerFactory().createEntityManager()
+				Person loggedInPerson = (Person) session.getSession()
 						.createQuery("from Person p where userName=:userName").setParameter("userName", userName)
 						.getResultStream().findFirst().orElse(null);
 
