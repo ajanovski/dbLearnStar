@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
@@ -204,8 +203,8 @@ public class TestManagerImpl implements TestManager {
 		}
 	}
 
-	private EntityManager getEntityManager() {
-		return session.getEntityManagerFactory().createEntityManager();
+	private Session getEntityManager() {
+		return session.getSession();
 	}
 
 	@Override

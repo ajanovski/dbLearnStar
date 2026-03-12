@@ -60,5 +60,8 @@ public class ModelConstants {
 	public static final String[] AllDBRelationalObjectTypes = { DBRelationalObjectTypesTABLE, DBRelationalObjectTypesPK,
 			DBRelationalObjectTypesFK, DBRelationalObjectTypesNN, DBRelationalObjectTypesCHECK,
 			DBRelationalObjectTypesUK, DBRelationalObjectTypesDATA };
+	
+	public static final String SystemParameterUserPreferences = "UserPreferences";
+	public static final String SystemParameterTypeCodeMirrorTheme = "CodeMirror-Theme";
 
 }

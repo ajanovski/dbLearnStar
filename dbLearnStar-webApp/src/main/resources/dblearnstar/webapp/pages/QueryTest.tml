@@ -58,54 +58,70 @@
 				<div id="serverStatus" class="p-0 m-0"></div>
 			</div>
 
-			<form t:type="form" t:name="queryTestForm" t:id="queryTestForm"
-				t:async="${shouldBeAsync}">
-				<t:errors />
-				<t:if t:test="SQL">
-					<input t:type="submit" t:id="Evaluate"
-						t:value="${message:Evaluate-label}" class="btn btn-primary btn-sm" />
-					<input type="button" id="RunOnly"
-						value="${message:RunOnlyNoEvaluation-label}"
-						class="btn btn-secondary btn-sm"></input>
-					<input type="button" id="RunOnlySelection"
-						value="${message:RunOnlyNoEvaluationSelection-label}"
-						class="btn btn-secondary btn-sm"></input>
-					<input type="button" id="PlanOnly"
-						value="${message:RunOnlyPlan-label}" class="btn btn-light btn-sm"></input>
-					<a class="btn btn-sm btn-info float-right"
-						title="${message:help-for-codemirror}"
-						alt="${message:help-for-codemirror}">?</a>
-					<p:else>
-						<t:if t:test="TEXT">
-							<span style="float: right; font-size: 80%; margin-top: 10px;">${message:help-for-codemirror-text}</span>
-							<input t:type="submit" t:id="SubmitTextSolution"
-								value="message:submitSolution-label"
-								class="btn btn-primary btn-sm"></input>
-						</t:if>
-						<t:if t:test="UPLOAD">
-						</t:if>
-					</p:else>
-				</t:if>
-				<t:if t:test="UPLOAD">
-					<div class="form-group">
-						<label for="file">${message:chooseFile-label}</label> <input
-							t:type="upload" t:id="file" t:value="file" t:validate="required" />
-					</div>
-					<div class="form-group">
-						<label t:type="label" for="filecomment"></label>
-						<textarea id="filecomment" t:id="filecomment" name="filecomment"
-							t:type="textarea" t:value="filecomment">
+			<div t:type="zone" t:id="formZone">
+				<form t:type="form" t:name="queryTestForm" t:id="queryTestForm"
+					t:async="${shouldBeAsync}" class="form form-horizontal">
+					<t:errors />
+					<t:if t:test="SQL">
+						<input t:type="submit" t:id="Evaluate"
+							t:value="${message:Evaluate-label}"
+							class="btn btn-primary btn-sm mb-1" />
+						<input type="button" id="RunOnly"
+							value="${message:RunOnlyNoEvaluation-label}"
+							class="btn btn-secondary btn-sm mb-1"></input>
+						<input type="button" id="RunOnlySelection"
+							value="${message:RunOnlyNoEvaluationSelection-label}"
+							class="btn btn-secondary btn-sm mb-1"></input>
+						<input type="button" id="PlanOnly"
+							value="${message:RunOnlyPlan-label}" class="btn btn-light btn-sm"></input>
+						<a class="btn btn-sm btn-info float-right"
+							title="${message:help-for-codemirror}"
+							alt="${message:help-for-codemirror}">?</a>
+						<p:else>
+							<t:if t:test="TEXT">
+								<span style="float: right; font-size: 80%; margin-top: 10px;">${message:help-for-codemirror-text}</span>
+								<input t:type="submit" t:id="SubmitTextSolution"
+									value="message:submitSolution-label"
+									class="btn btn-primary btn-sm"></input>
+							</t:if>
+							<t:if t:test="UPLOAD">
+							</t:if>
+						</p:else>
+					</t:if>
+					<t:if t:test="UPLOAD">
+						<p class="bg-danger color-yellow">... ${message} ...</p>
+						<div class="form-group">
+							<label for="file">${message:chooseFile-label}</label> <input
+								t:type="upload" t:id="file" t:value="file" t:validate="required" />
+						</div>
+						<div class="form-group">
+							<label t:type="label" for="filecomment"></label>
+							<textarea id="filecomment" t:id="filecomment" name="filecomment"
+								t:type="textarea" t:value="filecomment">
 								</textarea>
-					</div>
-					<input t:type="submit" t:id="Upload" value="message:Upload-label"
-						class="btn btn-primary btn-sm"></input>
-				</t:if>
-				<t:unless t:test="UPLOAD">
-					<textarea id="editorarea" t:id="editorarea" name="editorarea"
-						t:type="textarea" t:value="queryString" t:mixins="WebEditor"
-						t:WebEditor.areaType="${editorAreaType}" />
-				</t:unless>
-			</form>
+						</div>
+						<input t:type="submit" t:id="Upload" value="message:Upload-label"
+							class="btn btn-primary btn-sm"></input>
+					</t:if>
+					<t:unless t:test="UPLOAD">
+						<textarea id="editorarea" t:id="editorarea" name="editorarea"
+							t:type="textarea" t:value="queryString" t:mixins="WebEditor"
+							t:WebEditor.areaType="${editorAreaType}" />
+						<div class="form-group row mt-2">
+							<div class="col-sm-6"></div>
+							<label t:type="label" t:for="editorTheme"
+								class="col-sm-2 col-form-label" />
+							<div class="col-sm-4">
+								<select t:type="select"
+									class="selectTheme form-control form-control-sm"
+									t:id="editorTheme"
+									model="literal:default,cobalt,eclipse,monokai,night"
+									t:value="editorTheme" />
+							</div>
+						</div>
+					</t:unless>
+				</form>
+			</div>
 		</div>
 	</div>
 
@@ -136,8 +152,9 @@
 			<t:ModalBox t:id="evalModal" t:additionalClass=""
 				t:additionalClassDialog="modal-lg bg-danger ">
 				<p class="pt-0 pb-3">
-					<a t:type="actionLink" id="hideEvalModal" t:id="hideEvalModal" t:zone="errorZone"
-						class="close float-right"><t:SVGIcon t:path="x" /></a>
+					<a t:type="actionLink" id="hideEvalModal" t:id="hideEvalModal"
+						t:zone="errorZone" class="close float-right"><t:SVGIcon
+							t:path="x" /></a>
 				</p>
 				<div class="alert ${styleClassForEvaluation}  mt-3" role="alert">
 					<h4>
@@ -188,7 +205,8 @@
 					t:id="filterNotForEvaluation">${message:list-submissions-run-only-label}</a></li>
 			</ul>
 			<div class="mt-0">
-				<table t:type="grid" t:source="historyOfSolutions" class="table table-sm table-bordered table-hover"
+				<table t:type="grid" t:source="historyOfSolutions"
+					class="table table-sm table-bordered table-hover"
 					t:row="historicalSolution" t:rowsPerPage="10"
 					t:include="submittedOn,submission,evaluationSimple,evaluationComplex"
 					t:add="Action">
@@ -238,6 +256,12 @@
 			href="${asset:classpath:META-INF/assets/codemirror/lib/codemirror.css}" />
 		<link rel="stylesheet"
 			href="${asset:classpath:META-INF/assets/codemirror/theme/monokai.css}" />
+		<link rel="stylesheet"
+			href="${asset:classpath:META-INF/assets/codemirror/theme/cobalt.css}" />
+		<link rel="stylesheet"
+			href="${asset:classpath:META-INF/assets/codemirror/theme/night.css}" />
+		<link rel="stylesheet"
+			href="${asset:classpath:META-INF/assets/codemirror/theme/eclipse.css}" />
 		<script
 			src="${asset:classpath:META-INF/assets/codemirror/lib/codemirror.js}"></script>
 		<script

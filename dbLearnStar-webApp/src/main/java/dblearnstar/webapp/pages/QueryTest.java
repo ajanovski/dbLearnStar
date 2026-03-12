@@ -35,12 +35,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest;
-
-import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload2.core.FileUploadException;
 import org.apache.tapestry5.EventContext;
 import org.apache.tapestry5.PersistenceConstants;
 import org.apache.tapestry5.StreamResponse;
+import org.apache.tapestry5.annotations.Environmental;
 import org.apache.tapestry5.annotations.Import;
 import org.apache.tapestry5.annotations.InjectComponent;
 import org.apache.tapestry5.annotations.OnEvent;
@@ -49,6 +48,7 @@ import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.annotations.PublishEvent;
 import org.apache.tapestry5.annotations.RequestParameter;
 import org.apache.tapestry5.annotations.SessionState;
+import org.apache.tapestry5.beaneditor.Validate;
 import org.apache.tapestry5.commons.Messages;
 import org.apache.tapestry5.corelib.components.Zone;
 import org.apache.tapestry5.hibernate.annotations.CommitAfter;
@@ -80,10 +80,12 @@ import dblearnstar.webapp.services.ActivityManager;
 import dblearnstar.webapp.services.EvaluationService;
 import dblearnstar.webapp.services.GenericService;
 import dblearnstar.webapp.services.PersonManager;
+import dblearnstar.webapp.services.SystemConfigService;
 import dblearnstar.webapp.services.TestManager;
 import dblearnstar.webapp.services.TranslationService;
 import dblearnstar.webapp.util.AppConfig;
 import dblearnstar.webapp.util.FileStreamResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 @AdministratorPage
 @StudentPage
@@ -113,7 +115,8 @@ public class QueryTest {
 	private RequestGlobals requestGlobals;
 	@Inject
 	private Context context;
-	@Inject
+
+	@Environmental
 	private JavaScriptSupport javaScriptSupport;
 
 	@Inject
@@ -126,6 +129,8 @@ public class QueryTest {
 	private EvaluationService evaluationService;
 	@Inject
 	private PersonManager pm;
+	@Inject
+	private SystemConfigService systemConfigService;
 
 	@InjectComponent
 	private Zone historyZone;
@@ -137,6 +142,11 @@ public class QueryTest {
 	private Zone evalZone;
 	@InjectComponent
 	private Zone currentTimeZone;
+	@InjectComponent
+	private Zone formZone;
+
+	@InjectComponent
+	private ModalBox errorModal;
 
 	private Student activeStudent;
 
@@ -147,19 +157,19 @@ public class QueryTest {
 	@Property
 	@Persist
 	private Boolean filterNotForEvalution;
-	
+
 	@Property
 	@Persist
 	private UploadedFile file;
-	
+
 	@Property
 	@Persist
 	private String fileComment;
-	
+
 	@Property
 	@Persist(PersistenceConstants.FLASH)
 	private String message;
-	
+
 	@Property
 	@Persist(PersistenceConstants.FLASH)
 	private String queryString;
@@ -205,6 +215,11 @@ public class QueryTest {
 	private Long studentId;
 	private boolean toUpload;
 	private boolean toSubmitText;
+
+	@Persist
+	@Property
+	@Validate("required")
+	private String editorTheme;
 
 	@PublishEvent
 	@OnEvent("stillAlive")
@@ -265,8 +280,21 @@ public class QueryTest {
 		}
 	}
 
-	@InjectComponent
-	private ModalBox errorModal;
+	@PublishEvent
+	@OnEvent("changeTheme")
+	@CommitAfter
+	public void changeTheme(@RequestParameter(value = "newTheme") String newTheme) {
+		toUpload = false;
+		toSubmitText = false;
+		editorTheme = newTheme;
+		if (newTheme != null) {
+			systemConfigService.setValueAndCode(ModelConstants.SystemParameterUserPreferences, userInfo.getPersonId(),
+					ModelConstants.SystemParameterTypeCodeMirrorTheme, newTheme, newTheme);
+		}
+		if (request.isXHR()) {
+			ajaxResponseRenderer.addRender(historyZone).addRender(evalZone).addRender(errorZone).addRender(resultsZone);
+		}
+	}
 
 	public void onActionFromHideModal() {
 		errorModal.hide();
@@ -294,6 +322,15 @@ public class QueryTest {
 		if (eventContext.getCount() > 1) {
 			return ExamsAndTasksOverviewPage.class;
 		} else if (eventContext.getCount() == 1) {
+			if (editorTheme == null) {
+				String theme = systemConfigService.getValue(ModelConstants.SystemParameterUserPreferences,
+						userInfo.getPersonId(), ModelConstants.SystemParameterTypeCodeMirrorTheme);
+				if (theme == null) {
+					editorTheme = "default";
+				} else {
+					editorTheme = theme;
+				}
+			}
 			TaskInTestInstance tti = eventContext.get(TaskInTestInstance.class, 0);
 			if (tti == null) {
 				logger.error("tti is null, username:{}", userInfo.getUserName());
@@ -342,7 +379,7 @@ public class QueryTest {
 	void setupRender() {
 		if (codeType != null) {
 			if (isSQL()) {
-				javaScriptSupport.require("codemirror-run");
+				javaScriptSupport.require("codemirror-run").invoke("initialize").with(editorTheme);
 				javaScriptSupport.require("codemirror-error");
 			}
 		}
@@ -640,8 +677,8 @@ public class QueryTest {
 	}
 
 	Object onUploadException(FileUploadException ex) {
-		message = "Upload exception: " + ex.getMessage();
-		logger.error("Upload problem: {}", ex);
+		message = "I was not able to upload the file";
+		logger.error("Upload problem: {}", message);
 		return this;
 	}
 
@@ -655,9 +692,6 @@ public class QueryTest {
 			evalResultsComplex = false;
 			evalResultsExam = false;
 			queryString = "FILE:" + file.getFileName();
-			StudentSubmitSolution solution = recordQueryAsStudentSubmitSolution(false, queryString);
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-					AppConfig.getString("date.upload.submission.format"));
 			String emde5 = "";
 			try {
 				MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -669,23 +703,24 @@ public class QueryTest {
 				}
 				emde5 = sb.toString();
 			} catch (Exception e) {
-				emde5 = "";
+				emde5 = null;
 			}
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
+					AppConfig.getString("date.upload.submission.format"));
+			StudentSubmitSolution solution = recordQueryAsStudentSubmitSolution(false, queryString);
+			String userName = userInfo.getUserName();
+			String fileName = AppConfig.getString("additionalFiles.path")
+					+ AppConfig.getString("upload.path.submissions") + "/STUDENT_" + userName + "_SUBMISSION_"
+					+ solution.getStudentSubmitSolutionId() + "_" + simpleDateFormat.format(new Date()) + "_MD5_"
+					+ emde5;
 			try {
-				File copied = new File(
-						AppConfig.getString("additionalFiles.path") + AppConfig.getString("upload.path.submissions")
-								+ "/STUDENT_" + solution.getStudentStartedTest().getStudent().getPerson().getUserName()
-								+ "_SUBMISSION_" + solution.getStudentSubmitSolutionId() + "_"
-								+ simpleDateFormat.format(solution.getSubmittedOn()) + "_MD5_" + emde5);
+				File copied = new File(fileName);
 				file.write(copied);
-
 				solution.setSubmission(
 						solution.getSubmission() + "#COMMENT:" + fileComment + " #SAVEDFILE:" + copied.getName());
-
 				genericService.saveOrUpdate(solution);
-			} catch (Exception e) {
-				logger.error("Error uploading: {} {} {}", userInfo.getUserName(), file.getFileName(), e);
-				e.printStackTrace();
+			} catch (Exception ex) {
+				logger.error("{}", ex);
 			}
 			toUpload = false;
 		}
