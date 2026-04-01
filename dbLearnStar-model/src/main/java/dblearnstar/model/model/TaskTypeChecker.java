@@ -54,4 +54,12 @@ public class TaskTypeChecker {
 		}
 	}
 
+	public static boolean isTRIGGER(String codeType) {
+		if (codeType != null) {
+			return codeType.equals(ModelConstants.TaskCodeTRIGGER);
+		} else {
+			return false;
+		}
+	}
+
 }

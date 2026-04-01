@@ -44,10 +44,23 @@
 			</t:if>
 			<div class="card ${classForSolved} mb-3">
 				<div class="card-header">
-					${listedTaskInTestInstance.task.title} <a
-						class="btn btn-sm btn-primary float-right" t:type="PageLink"
-						t:page="QueryTest" t:id="SolveTest"
-						t:context="listedTaskInTestInstance">${message:attempt-label}</a>
+					${listedTaskInTestInstance.task.title}
+
+					<t:if test="!triggerTask">
+					    <a
+                            class="btn btn-sm btn-primary float-right" t:type="PageLink"
+                            t:page="QueryTest" t:id="SolveTest"
+                            t:context="listedTaskInTestInstance">${message:attempt-label}
+                        </a>
+                    </t:if>
+
+                    <t:if test="triggerTask">
+                      <a class="btn btn-sm btn-primary float-right" t:type="PageLink"
+                      t:page="TriggerTest"
+                      t:context="listedTaskInTestInstance">
+                        ${message:attempt-label}
+                      </a>
+                    </t:if>
 					<div class="p-1 pl-3 text-muted ">
 						<span class="mr-3">${message:numPersonsTriedToSolve-label}:
 							${numPersonsTriedToSolve}</span> - <span class="ml-3">${message:numPersonsSuccessful-label}:
@@ -57,7 +70,7 @@
 				</div>
 				<div class="card-body">
 					<p class="card-text">
-						<t:outputRaw t:value="listedTaskInTestInstance.task.description" />
+						<t:outputRaw t:value="parsedListedTaskDescription()" />
 					</p>
 				</div>
 			</div>
