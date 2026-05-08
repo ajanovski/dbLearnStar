@@ -44,7 +44,11 @@
 
 		<spring-boot-version>3.1.3</spring-boot-version>
 		<tapestry-version>5.9.0</tapestry-version>
+<<<<<<< HEAD
 		<jackson-version>2.18.6</jackson-version>
+=======
+		<jackson-version>2.19.4</jackson-version>
+>>>>>>> branch 'main' of git@github.com:ajanovski/dbLearnStar.git
 		<log4j-version>2.25.3</log4j-version>
 		<junit-version>5.8.2</junit-version>
 		<yasson-version>2.0.4</yasson-version>
