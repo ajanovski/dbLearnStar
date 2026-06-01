@@ -64,6 +64,8 @@ import dblearnstar.model.model.TaskTypeChecker;
 import dblearnstar.model.model.Triplet;
 import dblearnstar.model.model.UserInfo;
 import dblearnstar.webapp.annotations.AdministratorPage;
+import dblearnstar.webapp.model.dto.TriggerResultForPrinting;
+import dblearnstar.webapp.model.dto.TriggerTestCaseResult;
 import dblearnstar.webapp.model.StudentSelectModel;
 import dblearnstar.webapp.model.TaskInTestInstanceSelectModel;
 import dblearnstar.webapp.services.EvaluationService;
@@ -72,6 +74,7 @@ import dblearnstar.webapp.services.PersonManager;
 import dblearnstar.webapp.services.TestManager;
 import dblearnstar.webapp.services.TranslationService;
 import dblearnstar.webapp.services.UsefulMethods;
+import dblearnstar.webapp.services.TriggerEvaluationService;
 
 @AdministratorPage
 @Import(stylesheet = { "SubmissionEvaluations.css", "feedback-styles.css" }, module = { "zoneUpdateEffect",
@@ -102,6 +105,8 @@ public class SubmissionEvaluations {
 
 	@Inject
 	private EvaluationService evaluationService;
+	@Inject
+	private TriggerEvaluationService triggerEvaluationService;
 	@Inject
 	private GenericService genericService;
 	@Inject
@@ -171,6 +176,12 @@ public class SubmissionEvaluations {
 	private List<String> resultsHeaders2;
 	@Property
 	@Persist
+	List<TriggerTestCaseResult> triggerResultsSimple;
+	@Property
+	@Persist
+	List<TriggerTestCaseResult> triggerResultsComplex;
+	@Property
+	@Persist
 	private List<Object[]> resultsEvaluation1;
 	@Property
 	@Persist
@@ -192,6 +203,8 @@ public class SubmissionEvaluations {
 	private Object[] oneRow;
 	@Property
 	private Object oneColumn;
+	@Property
+	private TriggerTestCaseResult triggerTestCaseResult;
 
 	public void onActivate() {
 		logger.warn("Activated from {} by {} {}", request.getRemoteHost(), userInfo.getUserName(),
@@ -296,6 +309,10 @@ public class SubmissionEvaluations {
 					.equals(ModelConstants.TaskCodeUPLOAD)) {
 				modelSSS.exclude("evaluationSimple", "evaluationComplex", "evaluationExam", "notForEvaluation", "task");
 			}
+			if(filterTaskInTestInstance.getTask().getTaskIsOfTypes().get(0).getTaskType().getCodetype()
+				.equals(ModelConstants.TaskCodeTRIGGER)) {
+				modelSSS.exclude("task");
+			}
 		}
 		modelSSS.exclude("studentSubmitSolutionId");
 		return modelSSS;
@@ -376,11 +393,20 @@ public class SubmissionEvaluations {
 		resultsEvaluation2 = null;
 		resultsErrors1 = null;
 		resultsErrors2 = null;
+		triggerResultsSimple = null;
+		triggerResultsComplex = null;
 	}
 
 	@CommitAfter
 	public void onReevaluateSubmission(StudentSubmitSolution s) {
 		evaluationService.reEvalSolution(userInfo.getUserName(), s);
+		if (request.isXHR()) {
+			ajaxResponseRenderer.addRender(zSubmissions);
+		}
+	}
+
+	@CommitAfter void onReevaluateTriggerSubmission(StudentSubmitSolution s) {
+		triggerEvaluationService.reEvalSolution(userInfo.getUserName(), s);
 		if (request.isXHR()) {
 			ajaxResponseRenderer.addRender(zSubmissions);
 		}
@@ -405,6 +431,20 @@ public class SubmissionEvaluations {
 		}
 	}
 
+	public boolean isEditedAssessmentTaskTrigger() {
+		if (editedAssessment != null) {
+			StudentSubmitSolution sss = genericService.getByPK(StudentSubmitSolution.class,
+				editedAssessment.getStudentSubmitSolution().getStudentSubmitSolutionId());
+			return TaskTypeChecker.isTRIGGER(testManager.getCodeType(sss));
+		} else {
+			return false;
+		}
+	}
+
+	public boolean isEditedAssessmentTaskSQLorTrigger() {
+		return isEditedAssessmentTaskSQL() || isEditedAssessmentTaskTrigger();
+	}
+
 	public boolean isSQL() {
 		return TaskTypeChecker.isSQL(testManager.getCodeType(submission));
 	}
@@ -415,6 +455,14 @@ public class SubmissionEvaluations {
 
 	public boolean isDDL() {
 		return TaskTypeChecker.isDDL(testManager.getCodeType(submission));
+	}
+
+	public boolean isTrigger() {
+		return TaskTypeChecker.isTRIGGER(testManager.getCodeType(submission));
+	}
+
+	public boolean isSQLorTrigger() {
+		return isSQL() || isTrigger();
 	}
 
 	public boolean isFilterTaskDDL() {
@@ -529,6 +577,45 @@ public class SubmissionEvaluations {
 		}
 	}
 
+	public void onViewTriggerEvaluationResults(StudentSubmitSolution s) {
+		if (triggerResultsSimple != null || triggerResultsComplex != null) {
+			clearResultsAndErrors();
+		} else {
+			TaskInTestInstance tti = s.getTaskInTestInstance();
+			TestInstanceParameters tip = tti.getTestInstance().getTestInstanceParameters().get(0);
+
+			long studentId = s.getStudentStartedTest().getStudent().getStudentId();
+			String trigger = s.getSubmission();
+			String description = tti.getTask().getDescription();
+
+			TriggerResultForPrinting resultSimple = triggerEvaluationService.evalTriggerForPrinting(
+				tti,
+				tip,
+				trigger,
+				studentId,
+				tip.getSchemaSimple(),
+				description
+			);
+
+			TriggerResultForPrinting resultComplex = triggerEvaluationService.evalTriggerForPrinting(
+				tti,
+				tip,
+				trigger,
+				studentId,
+				tip.getSchemaComplex(),
+				description
+			);
+
+			triggerResultsSimple = resultSimple.getTestCaseResults();
+			triggerResultsComplex = resultComplex.getTestCaseResults();
+			resultsErrors1 = resultSimple.getExecutionErrors();
+			resultsErrors2 = resultComplex.getExecutionErrors();
+		}
+		if (request.isXHR()) {
+			ajaxResponseRenderer.addRender(zSQLEval);
+		}
+	}
+
 	public String getClassSQLsolution() {
 		if (isEditedAssessmentTaskSQL()) {
 			return "sqlSolution";
@@ -621,8 +708,13 @@ public class SubmissionEvaluations {
 		return (resultsEvaluation1 != null) || (resultsEvaluation2 != null);
 	}
 
+	public boolean isAnyTriggerResults() {
+		return (triggerResultsSimple != null && triggerResultsSimple.size() > 0)
+				|| (triggerResultsComplex != null && triggerResultsComplex.size() > 0);
+	}
+
 	public boolean isAnyStatus() {
-		return isAnyErrors() || isAnyResults();
+		return isAnyErrors() || isAnyResults() || isAnyTriggerResults();
 	}
 
 	void onCopySolutionToFeedback() {

@@ -32,11 +32,13 @@ import org.slf4j.Logger;
 import dblearnstar.model.entities.StudentSubmitSolution;
 import dblearnstar.model.entities.TaskInTestInstance;
 import dblearnstar.model.entities.TestInstance;
+import dblearnstar.model.model.TaskTypeChecker;
 import dblearnstar.model.model.UserInfo;
 import dblearnstar.webapp.annotations.AdministratorPage;
 import dblearnstar.webapp.services.EvaluationService;
 import dblearnstar.webapp.services.GenericService;
 import dblearnstar.webapp.services.TestManager;
+import dblearnstar.webapp.services.TriggerEvaluationService;
 
 @AdministratorPage
 public class Reevaluation {
@@ -46,6 +48,9 @@ public class Reevaluation {
 
 	@Inject
 	private EvaluationService evaluationService;
+
+	@Inject
+	private TriggerEvaluationService triggerEvaluationService;
 
 	@Inject
 	private GenericService genericService;
@@ -82,7 +87,17 @@ public class Reevaluation {
 	public void onActionFromReEvalTest(TestInstance selectedTestInstance) {
 		List<StudentSubmitSolution> list = evaluationService
 				.getAllSolutionsForEvalutionFromTestInstance(selectedTestInstance);
-		evaluationService.reEvalListOfSubmissions(userInfo.getUserName(), list);
+
+		List<StudentSubmitSolution> solutions = list.stream()
+				.filter(solution -> !TaskTypeChecker.isTRIGGER(testManager.getCodeType(solution)))
+				.toList();
+		List<StudentSubmitSolution> triggerSolutions = list.stream()
+				.filter(solution -> TaskTypeChecker.isTRIGGER(testManager.getCodeType(solution)))
+				.toList();
+
+		evaluationService.reEvalListOfSubmissions(userInfo.getUserName(), solutions);
+		triggerEvaluationService.reEvalListOfSubmissions(userInfo.getUserName(), triggerSolutions);
+
 		logger.info("Finished reEvalTest and processed {} entries", list.size());
 	}
 
@@ -90,14 +105,34 @@ public class Reevaluation {
 	public void onActionFromReEvalTaskInTestInstance(TaskInTestInstance taskInTestInstance) {
 		List<StudentSubmitSolution> list = evaluationService
 				.getAllSolutionsForEvalutionFromTaskInTestInstance(taskInTestInstance);
-		evaluationService.reEvalListOfSubmissions(userInfo.getUserName(), list);
+
+		List<StudentSubmitSolution> solutions = list.stream()
+				.filter(solution -> !TaskTypeChecker.isTRIGGER(testManager.getCodeType(solution)))
+				.toList();
+		List<StudentSubmitSolution> triggerSolutions = list.stream()
+				.filter(solution -> TaskTypeChecker.isTRIGGER(testManager.getCodeType(solution)))
+				.toList();
+
+		evaluationService.reEvalListOfSubmissions(userInfo.getUserName(), solutions);
+		triggerEvaluationService.reEvalListOfSubmissions(userInfo.getUserName(), triggerSolutions);
+
 		logger.info("Finished reEvalTaskInTestInstance and processed {} entries", list.size());
 	}
 
 	@CommitAfter
 	public void onActionFromReEvalAll() {
 		List<StudentSubmitSolution> list = evaluationService.getAllSolutionsForEvaluation();
-		evaluationService.reEvalListOfSubmissions(userInfo.getUserName(), list);
+
+		List<StudentSubmitSolution> solutions = list.stream()
+				.filter(solution -> !TaskTypeChecker.isTRIGGER(testManager.getCodeType(solution)))
+				.toList();
+		List<StudentSubmitSolution> triggerSolutions = list.stream()
+				.filter(solution -> TaskTypeChecker.isTRIGGER(testManager.getCodeType(solution)))
+				.toList();
+
+		evaluationService.reEvalListOfSubmissions(userInfo.getUserName(), solutions);
+		triggerEvaluationService.reEvalListOfSubmissions(userInfo.getUserName(), triggerSolutions);
+
 		logger.info("Finished reEvalAll and processed {} entries", list.size());
 	}
 

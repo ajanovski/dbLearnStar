@@ -23,7 +23,7 @@
 			</div>
 
 
-			<div class="card mt-2" t:type="if" t:test="editedAssessmentTaskSQL">
+			<div class="card mt-2" t:type="if" t:test="editedAssessmentTaskSQLorTrigger">
 				<div t:id="zSQLEval" t:type="zone">
 					<div class="card-header">
 						<div class="row m-0 p-0 ">
@@ -52,11 +52,23 @@
 									t:context="editedAssessment.studentSubmitSolution"
 									t:zone="zModal" class="btn btn-sm btn-warning">${message:reevaluate-label}
 									<t:SVGIcon t:path="repeat" />
-								</a> <a href="" class="btn btn-sm btn-info" t:type="eventlink"
-									t:id="viewEvaluationResults" t:zone="zSQLEval"
-									t:context="editedAssessment.studentSubmitSolution">${message:viewEvalResults-label}
-									<t:SVGIcon t:path="eye" />
-								</a> <a href="" t:type="eventlink"
+								</a>
+								 <t:if t:test="editedAssessmentTaskSQL">
+                                     <a href="" t:type="eventlink" t:id="viewEvaluationResults" t:zone="zSQLEval"
+                                        t:context="editedAssessment.studentSubmitSolution"
+                                        class="btn btn-sm btn-info">${message:viewEvalResults-label}
+                                        <t:SVGIcon t:path="eye" />
+                                     </a>
+                                 </t:if>
+
+                                 <t:if t:test="editedAssessmentTaskTrigger">
+                                     <a href="" t:type="eventlink" t:id="viewTriggerEvaluationResults" t:zone="zSQLEval"
+                                        t:context="editedAssessment.studentSubmitSolution"
+                                        class="btn btn-sm btn-info">${message:viewEvalResults-label}
+                                        <t:SVGIcon t:path="eye" />
+                                     </a>
+                                 </t:if>
+								<a href="" t:type="eventlink"
 									t:id="assessEditedAsCorrectSubmission" t:async="true"
 									t:zone="zModal" class="btn btn-sm btn-success correct"><img
 									t:type="svgicon" t:path="check" />${message:assessmentComment-correct}</a>
@@ -137,6 +149,63 @@
 									</p:else>
 								</div>
 							</div>
+						</div>
+						<div t:type="if" t:test="anyTriggerResults">
+						    <h3>${message:query-results-label}1</h3>
+                            <div class="alert resultspanel resultspanel-colors" role="alert"
+                                 t:type="if" t:test="triggerResultsSimple">
+                                <table class="tblCompareData table table-sm table-hover table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Statement</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                     <tbody>
+                                        <tr t:type="loop" t:source="triggerResultsSimple" t:value="triggerTestCaseResult">
+                                            <td>${triggerTestCaseResult.id}</td>
+                                            <td><tt>${triggerTestCaseResult.statement}</tt></td>
+                                            <td>
+                                                <t:booleanindicator t:value="triggerTestCaseResult.resultCorrect"
+                                                                    showCheckMark="true"
+                                                                    showNo="true"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p:else>
+                                    <p>/</p>
+                                </p:else>
+                            </div>
+
+                            <h3>${message:query-results-label}2</h3>
+                            <div class="alert resultspanel resultspanel-colors" role="alert"
+                                 t:type="if" t:test="triggerResultsComplex">
+                                <table class="tblCompareData table table-sm table-hover table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Statement</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t:type="loop" t:source="triggerResultsComplex" t:value="triggerTestCaseResult">
+                                            <td>${triggerTestCaseResult.id}</td>
+                                            <td><tt>${triggerTestCaseResult.statement}</tt></td>
+                                            <td>
+                                                <t:booleanindicator t:value="triggerTestCaseResult.resultCorrect"
+                                                                    showCheckMark="true"
+                                                                    showNo="true"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p:else>
+                                    <p>/</p>
+                                </p:else>
+                            </div>
 						</div>
 					</div>
 				</div>
@@ -300,7 +369,7 @@
 						class="btn btn-sm btn-secondary">In Focus</a>
 				</p:submittedByCell>
 				<p:submissionCell>
-					<t:if t:test="SQL">
+					<t:if t:test="SQlorTrigger">
 						<t:code t:additionalClass="literal:submittedCode"
 							t:value="submission.submission"></t:code>
 					</t:if>
@@ -345,6 +414,12 @@
 							class="btn btn-sm btn-warning"><img t:type="svgicon"
 							t:path="repeat" />${message:reevaluate-label}</a>
 					</div>
+					<div t:type="if" t:test="Trigger">
+                        <a href="" t:type="eventlink" t:id="reevaluateTriggerSubmission"
+                            t:context="submission" t:zone="zSubmissions"
+                            class="btn btn-sm btn-warning"><img t:type="svgicon"
+                            t:path="repeat" />${message:reevaluate-label}</a>
+                    </div>
 					<div t:type="if" t:test="UPLOAD">Upload is not supported.</div>
 					<div t:type="if" t:test="submission.evaluations">
 						${message:grade-label}: <span class="badge badge-dark">${submissionsFirstEvaluation.grade}</span>

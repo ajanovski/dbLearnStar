@@ -26,6 +26,7 @@ public class ModelConstants {
 	public static final String TaskCodeDDL = "DDL";
 	public static final String TaskCodeTEXT = "TEXT";
 	public static final String TaskCodeUPLOAD = "UPLOAD";
+	public static final String TaskCodeTRIGGER = "TRIGGER";
 
 	public static final String ActivityEval = "TASK_EVAL";
 	public static final String ActivityExecAll = "TASK_RUNONLY";

@@ -1,0 +1,223 @@
+<html t:type="layout"
+	title="${message:app-title} ${message:trigger-test-page}"
+	xmlns:t="http://tapestry.apache.org/schema/tapestry_5_4.xsd"
+	xmlns:p="tapestry:parameter">
+
+<h2>
+	<a href="" t:type="actionlink" t:id="BackToExamsOverview">${translateTestInstanceTitle}</a>
+</h2>
+
+<t:if t:test="accessAllowed">
+
+	<div class="row" id="taskDetails">
+		<div class="col-sm-6">
+			<h3 class="taskname">${translateTaskTitle}
+				<span class="badge badge-info">Points:
+					${taskInTestInstance.points}</span>
+			</h3>
+			<div class="taskdescription">
+				<t:outputraw t:value="translateTaskDescription"></t:outputraw>
+			</div>
+			<div class="schemaimg" id="taskpane" t:type="if" t:test="TRIGGER">
+				<t:if
+					t:test="${taskInTestInstance.testInstance.testTemplate.model.diagramSvg}">
+					<t:outputraw
+						t:value="${taskInTestInstance.testInstance.testTemplate.model.diagramSvg}"></t:outputraw>
+					<p:else>
+						<t:if
+							t:test="${taskInTestInstance.testInstance.testTemplate.model.diagramPng}">
+							<t:outputraw
+								t:value="${taskInTestInstance.testInstance.testTemplate.model.diagramPng}"></t:outputraw>
+							<p:else>
+								<img
+									src="${taskInTestInstance.testInstance.testTemplate.model.diagramUrl}" />
+							</p:else>
+						</t:if>
+					</p:else>
+				</t:if>
+			</div>
+		</div>
+
+		<div class="col-sm-6">
+
+			<div class="text-right pt-0 pb-2 mt-0 mb-0" t:type="zone"
+				t:id="currentTimeZone">
+				<div t:type="if" t:test="testIsNow"
+					class="m-0 p-0 pr-2 ${classTestIsNow}">
+					<p class="m-0 alert-heading">
+						<strong>${testIsNow}</strong>
+					</p>
+					<p class="p-0 m-0">
+						<strong>${message:testOpenUntil-label}: <span
+							class="code">${displayEndTime}</span></strong>
+					</p>
+					<p class="p-0 m-0">${message:serverTime-label}:
+						<span class="code">${displayCurrentTime}</span>
+					</p>
+				</div>
+				<div id="serverStatus" class="p-0 m-0"></div>
+			</div>
+
+			<form t:type="form" t:name="queryTestForm" t:id="queryTestForm"
+            				t:async="${shouldBeAsync}">
+                <t:errors />
+                <t:if t:test="TRIGGER">
+                    <input t:type="submit" t:id="Evaluate"
+                        t:value="${message:Evaluate-label}" class="btn btn-primary btn-sm" />
+                    <input t:type="submit" t:id="RunOnly"
+                        t:value="${message:RunOnlyNoEvaluation-label}"
+                        class="btn btn-secondary btn-sm"></input>
+                    <a class="btn btn-sm btn-info float-right"
+                        title="${message:help-for-codemirror}"
+                        alt="${message:help-for-codemirror}">?</a>
+                </t:if>
+                <textarea id="editorarea" t:id="editorarea" name="editorarea"
+                    t:type="textarea" t:value="triggerString" t:mixins="WebEditor"
+                    t:WebEditor.areaType="${editorAreaType}" />
+            </form>
+		</div>
+	</div>
+
+	<div class="row" t:type="zone" t:id="errorZone" id="errorZone">
+		<div class="p-0" t:type="if" t:test="resultsErrors">
+			<t:ModalBox t:additionalClass=""
+				t:additionalClassDialog="modal-lg bg-danger " t:id="errorModal">
+				<p class="pt-0 pb-3">
+					<a t:type="actionLink" t:id="hideModal" t:zone="errorZone"
+						class="close float-right"><t:SVGIcon t:path="x" /></a>
+				</p>
+				<div class="alert alert-danger errorpanel color-queryError"
+					role="alert">
+					<h4>
+						<t:outputRaw t:value="message:errorMessages-label" />
+					</h4>
+					<ul>
+						<li t:type="loop" t:source="resultsErrors" t:value="errorLine">
+							${errorLine}</li>
+					</ul>
+				</div>
+			</t:ModalBox>
+		</div>
+	</div>
+
+	<div class="row" t:type="zone" t:id="evalZone" id="evalZone">
+		<div class="col-sm-12" t:type="if" t:test="resultsEvaluation">
+			<t:ModalBox t:id="evalModal" t:additionalClass=""
+				t:additionalClassDialog="modal-lg bg-danger ">
+				<p class="pt-0 pb-3">
+					<a t:type="actionLink" id="hideEvalModal" t:id="hideEvalModal" t:zone="errorZone"
+						class="close float-right"><t:SVGIcon t:path="x" /></a>
+				</p>
+				<div class="alert ${styleClassForEvaluation}  mt-3" role="alert">
+					<h4>
+						<t:outputRaw t:value="message:trigger-eval-label" />
+					</h4>
+					<ul>
+						<li t:type="loop" t:source="resultsEvaluation"
+							t:value="evaluationLine"><t:outputRaw
+								t:value="evaluationLine" /></li>
+					</ul>
+				</div>
+			</t:ModalBox>
+		</div>
+	</div>
+
+	<div class="row">
+        <div class="col-sm-12">
+            <div t:type="zone" t:id="resultsZone">
+                <t:if t:test="testCaseResults">
+                    <div class="alert alert-success resultspanel resultspanel-colors" role="alert">
+                        <h3>${message:trigger-results-label}</h3>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Statement</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t:type="loop" t:source="testCaseResults" t:value="testCaseResult">
+                                    <td>${testCaseResult.getId()}</td>
+                                    <td>${testCaseResult.getStatement()}</td>
+                                    <td>
+                                        <t:booleanindicator t:value="testCaseResult.isResultCorrect()"
+                                                            t:showCheckMark="true" t:showno="true" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t:if>
+            </div>
+        </div>
+    </div>
+
+	<div class="row" id="submissionHistoryDiv">
+		<div class="col-sm-12" t:type="zone" t:id="historyZone"
+			id="historyZone">
+			<h3>${message:historyOfSubmissions-label}</h3>
+			<ul class="nav nav-tabs">
+				<li class="nav-item"><a class="nav-link ${activeEval}" href=""
+					t:type="actionlink" t:async="true" t:id="filterForEvaluation">
+						${message:list-submissions-evaluation-only-label}</a></li>
+				<li class="nav-item"><a class="nav-link ${activeNotEval}"
+					href="" t:type="actionlink" t:async="true"
+					t:id="filterNotForEvaluation">${message:list-submissions-run-only-label}</a></li>
+			</ul>
+			<div class="mt-0">
+				<table t:type="grid" t:source="historyOfSolutions" class="table table-sm table-bordered table-hover"
+					t:row="historicalSolution" t:rowsPerPage="10"
+					t:include="submittedOn,submission,evaluationSimple,evaluationComplex"
+					t:add="Action">
+					<p:evaluationSimpleCell>
+						<t:booleanindicator t:value="historicalSolution.evaluationSimple"
+							t:showCheckMark="true" t:showno="true" />
+					</p:evaluationSimpleCell>
+					<p:evaluationComplexCell>
+						<t:booleanindicator t:value="historicalSolution.evaluationComplex"
+							t:showCheckMark="true" t:showno="true" />
+					</p:evaluationComplexCell>
+					<p:submissionCell>
+						<t:if t:test="TRIGGER">
+							<p class="code">${historicalSolution.submission}</p>
+						</t:if>
+					</p:submissionCell>
+					<p:submittedOnCell>
+						<t:output format="literal:yyyy-MM-dd HH:mm:ss.S"
+							value="historicalSolution.submittedOn" />
+					</p:submittedOnCell>
+					<p:actionCell>
+                        <a class="btn btn-warning btn-sm" href="" t:type="actionlink"
+                            t:context="historicalSolution" t:id="loadHistoricalSolution">${message:load-label}
+                        </a>
+                    </p:actionCell>
+				</table>
+			</div>
+		</div>
+	</div>
+
+
+    <link rel="stylesheet"
+        href="${asset:classpath:META-INF/assets/codemirror/lib/codemirror.css}" />
+    <link rel="stylesheet"
+        href="${asset:classpath:META-INF/assets/codemirror/theme/monokai.css}" />
+    <script
+        src="${asset:classpath:META-INF/assets/codemirror/lib/codemirror.js}"></script>
+    <script
+        src="${asset:classpath:META-INF/assets/codemirror/mode/sql/sql.js}"></script>
+    <script
+        src="${asset:classpath:META-INF/assets/codemirror/addon/edit/matchbrackets.js}"></script>
+    <link rel="stylesheet"
+        href="${asset:classpath:META-INF/assets/codemirror/addon/hint/show-hint.css}" />
+    <script
+        src="${asset:classpath:META-INF/assets/codemirror/addon/hint/show-hint.js}"></script>
+    <script
+        src="${asset:classpath:META-INF/assets/codemirror/addon/hint/sql-hint.js}"></script>
+    <script>
+        var queryTestErrorPosition = "${errorPosition}";
+    </script>
+
+</t:if>
+
+</html>

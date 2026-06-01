@@ -74,6 +74,7 @@ public class AppModule {
 		binder.bind(TestManager.class);
 		binder.bind(TranslationService.class);
 		binder.bind(SystemConfigService.class);
+		binder.bind(TriggerEvaluationService.class, TriggerEvaluationServiceImpl.class);
 	}
 
 	public static void contributeFactoryDefaults(MappedConfiguration<String, Object> configuration) {
