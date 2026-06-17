@@ -64,7 +64,6 @@
 									t:id="assessEditedAsIncorrectSubmission" t:async="true"
 									t:zone="zModal" class="btn btn-sm btn-warning incorrect"><img
 									t:type="svgicon" t:path="x" />${message:assessmentComment-incorrect}</a>
-
 							</div>
 						</div>
 					</div>
@@ -149,8 +148,18 @@
 						t:id="zSolution" id="zSolution">
 						<label for="solution">${message:submittedBy-label}:
 							${editedAssessmentSubmitterName}</label> <a href="" t:type="eventlink"
-							t:id="copySolutionToFeedback"
-							class="float-right btn btn-sm btn-danger p-0 pl-1 pr-1">↦</a>
+							t:id="copySolutionToFeedback" title="copy to feedback"
+							class="float-right btn btn-sm btn-danger ml-1 p-0 pl-1 pr-1"
+							t:zone="zModal">↦</a> <a href="#" title="increace font size"
+							class="float-right btn btn-sm btn-info ml-0 p-0 pl-1 pr-1"
+							id="increaseFontSize">+</a> <a href="#" title="reset font size"
+							class="float-right btn btn-sm btn-info ml-0 p-0 pl-1 pr-1"
+							id="resetFontSize">reset</a> <a href="#"
+							title="decrease font size"
+							class="float-right btn btn-sm btn-info ml-1 p-0 pl-1 pr-1"
+							id="decreaseFontSize">-</a> <a href="#" title="toggle word wrap"
+							class="float-right btn btn-sm btn-info ml-1 p-0 pl-1 pr-1"
+							id="toggleWordWrap">w</a>
 						<div class="card-body collapse" id="collapsedDescription">
 							<t:outputraw t:value="translateTaskDescription"></t:outputraw>
 						</div>
@@ -288,6 +297,16 @@
 			t:context="filterTaskInTestInstance">${message:eval-ddl-label}</a>
 	</div>
 	<t:if t:test="filterTestInstance">
+		<p>
+			<a href="#" id="tableFontSizeIncrease" title="increace font size"
+				class="float-right btn btn-sm btn-info ml-0 p-0 pl-1 pr-1">+</a> <a
+				href="#" id="tableFontSizeReset" title="restore font size"
+				class="float-right btn btn-sm btn-info ml-0 p-0 pl-1 pr-1">reset</a>
+			<a href="#" id="tableFontSizeDecrease" title="decrease font size"
+				class="float-right btn btn-sm btn-info ml-1 p-0 pl-1 pr-1">-</a> <a
+				href="#" id="tableToggleWordWrap" title="toggle word wrap"
+				class="float-right btn btn-sm btn-info ml-1 p-0 pl-1 pr-1">w</a>
+		</p>
 		<div>
 			<table t:id="recentsubmission" t:type="grid"
 				t:source="allSubmissions" t:row="submission" t:model="modelSSS"
@@ -306,12 +325,12 @@
 					</t:if>
 					<t:if t:test="DDL">
 						<div class="pre-scrollable submittedCode">
-							<t:outputraw t:value="submission.submission"></t:outputraw>
+							<pre><t:outputraw t:value="submission.submission"></t:outputraw></pre>
 						</div>
 					</t:if>
 					<t:if t:test="TEXT">
 						<div class="pre-scrollable submittedText">
-							<t:outputraw t:value="submission.submission"></t:outputraw>
+							<pre><t:outputraw t:value="submission.submission"></t:outputraw></pre>
 						</div>
 					</t:if>
 				</p:submissionCell>

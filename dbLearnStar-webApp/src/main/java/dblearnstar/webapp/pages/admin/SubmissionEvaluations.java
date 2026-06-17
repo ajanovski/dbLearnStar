@@ -75,7 +75,7 @@ import dblearnstar.webapp.services.UsefulMethods;
 
 @AdministratorPage
 @Import(stylesheet = { "SubmissionEvaluations.css", "feedback-styles.css" }, module = { "zoneUpdateEffect",
-		"bootstrap/modal", "bootstrap/collapse" })
+		"bootstrap/modal", "bootstrap/collapse", "fontSizeControls" })
 public class SubmissionEvaluations {
 
 	@SessionState
@@ -262,7 +262,7 @@ public class SubmissionEvaluations {
 		BeanModel<StudentSubmitSolution> modelSSS = beanModelSource.createDisplayModel(StudentSubmitSolution.class,
 				messages);
 		modelSSS.add(RelativePosition.BEFORE, "submission", "submittedBy",
-				pcs.create(StudentSubmitSolution.class, "studentStartedTest.student.person.lastName"));
+				pcs.create(StudentSubmitSolution.class, "studentStartedTest.student.person.userName"));
 		modelSSS.add(RelativePosition.BEFORE, "submission", "task",
 				pcs.create(StudentSubmitSolution.class, "taskInTestInstance.task.title"));
 		modelSSS.add(RelativePosition.BEFORE, "submission", "test",
@@ -627,6 +627,9 @@ public class SubmissionEvaluations {
 
 	void onCopySolutionToFeedback() {
 		editedAssessment.setFeedback(getFormattedSolution());
+		if (request.isXHR()) {
+			ajaxResponseRenderer.addRender(zModal);
+		}
 	}
 
 	public String getEditedAssessmentSubmitterName() {
@@ -638,4 +641,5 @@ public class SubmissionEvaluations {
 		}
 		return name;
 	}
+
 }
