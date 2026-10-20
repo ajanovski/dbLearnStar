@@ -20,8 +20,8 @@
 		<property name="hibernate.hikari.schema">@jdbc.default_schema@</property>
 		<property name="hibernate.hikari.registerMbeans">true</property>
 		<property name="hibernate.hikari.poolName">TapestryHibernatePool</property>
-		<property name="hibernate.hikari.minimumIdle">20</property>
-		<property name="hibernate.hikari.maximumPoolSize">200</property>
+		<property name="hibernate.hikari.minimumIdle">4</property>
+		<property name="hibernate.hikari.maximumPoolSize">16</property>
 		<property name="hibernate.hikari.idleTimeout">300000</property>
 		<property name="hibernate.hikari.maxLifetime">3600000</property>
 		<property name="hibernate.hikari.leakDetectionThreshold">30000</property>
