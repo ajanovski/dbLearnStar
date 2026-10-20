@@ -13,7 +13,7 @@
 
 	<groupId>dblearnstar</groupId>
 	<artifactId>dblearnstar</artifactId>
-	<version>0.15.6-SNAPSHOT</version>
+	<version>0.15.7-SNAPSHOT</version>
 	<name>dbLearnStar</name>
 
 	<packaging>war</packaging>
@@ -44,13 +44,13 @@
 
 		<spring-boot-version>3.1.12</spring-boot-version>
 		<tapestry-version>5.9.0</tapestry-version>
-		<jackson-version>2.18.6</jackson-version>
-		<log4j-version>2.25.4</log4j-version>
+		<jackson-version>2.18.12</jackson-version>
+		<log4j-version>2.26.1</log4j-version>
 		<junit-version>5.8.2</junit-version>
 		<yasson-version>2.0.4</yasson-version>
 		<servlet-version>5.0.0</servlet-version>
 
-		<postgresql-version>42.7.11</postgresql-version>
+		<postgresql-version>42.7.14</postgresql-version>
 		<cas-client-version>4.0.4</cas-client-version>
 	</properties>
 
